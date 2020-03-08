@@ -17,7 +17,30 @@ def find_smallest_positive(xs):
     >>> find_smallest_positive([-3, -2, -1]) is None
     True
     '''
+    if xs == []:
+        return None
 
+    left = 0
+    right = len(xs) - 1
+
+    if xs[0] > 0:
+        return 0
+
+    def fsp_rec(left, right):
+        mid = (left + right)//2
+        if xs[mid] == 0:
+            return mid + 1
+        if left == right:
+            if xs[mid] > 0:
+                return mid
+            else:
+                return None
+        elif xs[mid] < 0:
+            return fsp_rec(mid + 1, right)
+        elif xs[mid] > 0:
+            return fsp_rec(left, mid-1)
+
+    return fsp_rec(left, right)
 
 def count_repeats(xs, x):
     '''
@@ -39,7 +62,51 @@ def count_repeats(xs, x):
     >>> count_repeats([3, 2, 1], 4)
     0
     '''
+    if xs == []:
+        return 0
 
+    left = 0
+    right = len(xs) - 1
+
+    def larger_than_x(left, right):
+        mid = (left + right)//2
+
+        if xs[mid] == x:
+            if mid == 0 or xs[mid-1] > x:
+                return mid
+            else:
+                return larger_than_x(left, mid-1)
+        elif left == right:
+            return None
+        elif xs[mid] < x:
+            return larger_than_x(left, mid - 1)
+        elif xs[mid] > x:
+            return larger_than_x(mid + 1, right)
+
+    def smaller_than_x(left, right):
+        mid = (left + right)//2
+
+        try:
+            if xs[mid] == x:
+                if x > xs[mid + 1] or (len(xs) - 1) == mid:
+                    return mid
+                else:
+                    return smaller_than_x(mid+1, right)
+        except IndexError:
+            return mid
+        if left == right:
+            return None
+        elif xs[mid] > x:
+            return smaller_than_x(mid + 1, right)
+        elif xs[mid] < x:
+            return smaller_than_x(left, mid - 1)
+    larger = larger_than_x(left, right)
+    smaller = smaller_than_x(left, right)
+
+    if larger == None or smaller == None:
+        return 0
+    else:
+        return smaller - larger + 1
 
 def argmin(f, lo, hi, epsilon=1e-3):
     '''
@@ -61,4 +128,17 @@ def argmin(f, lo, hi, epsilon=1e-3):
     >>> argmin(lambda x: (x-5)**2, -20, 0)
     -0.00016935087808430278
     '''
+    def search(lo, hi):
 
+        if hi - lo < epsilon:
+            return hi
+
+        m1 = lo + (hi-lo)/4
+        m2 = hi - (hi-lo)/2
+
+        if f(m1) < f(m2):
+            return search(lo, m2)
+        if f(m1) > f(m2):
+            return search(m1, hi)
+
+    return search(lo, hi)
